@@ -1,0 +1,559 @@
+import pygame
+import math
+import random
+
+pygame.init()
+
+WIDTH = 1000
+HEIGHT = 700
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Goku - Kamehameha!")
+
+clock = pygame.time.Clock()
+
+# -----------------------------
+# COLORS
+# -----------------------------
+BLACK = (10, 10, 15)
+HAIR = (15, 15, 20)
+SKIN = (235, 170, 115)
+ORANGE = (245, 125, 20)
+DARK_ORANGE = (190, 75, 10)
+BLUE = (20, 80, 190)
+DARK_BLUE = (10, 35, 100)
+WHITE = (255, 255, 255)
+CYAN = (60, 220, 255)
+LIGHT_BLUE = (150, 245, 255)
+YELLOW = (255, 240, 100)
+
+# -----------------------------
+# KAMEHAMEHA PARTICLES
+# -----------------------------
+particles = []
+
+for i in range(120):
+    particles.append([
+        random.randint(0, 350),
+        random.randint(0, HEIGHT),
+        random.uniform(1, 4),
+        random.uniform(-1, 1)
+    ])
+
+
+def draw_spiky_hair(x, y, scale=1):
+    """Draw black spiky anime-style hair."""
+
+    hair_points = [
+        (x - 70*scale, y + 30*scale),
+        (x - 115*scale, y - 5*scale),
+        (x - 65*scale, y - 10*scale),
+        (x - 105*scale, y - 60*scale),
+        (x - 40*scale, y - 35*scale),
+        (x - 45*scale, y - 105*scale),
+        (x - 5*scale, y - 55*scale),
+        (x + 20*scale, y - 125*scale),
+        (x + 35*scale, y - 60*scale),
+        (x + 80*scale, y - 100*scale),
+        (x + 65*scale, y - 45*scale),
+        (x + 120*scale, y - 65*scale),
+        (x + 75*scale, y - 5*scale),
+        (x + 105*scale, y + 25*scale),
+        (x + 55*scale, y + 25*scale),
+        (x + 50*scale, y + 65*scale),
+        (x - 55*scale, y + 65*scale)
+    ]
+
+    pygame.draw.polygon(screen, HAIR, hair_points)
+
+
+def draw_goku(x, y, scale=1):
+    """
+    Draws a colorful Goku-inspired fighter.
+    x,y = center position
+    """
+
+    # -----------------------------
+    # LEGS
+    # -----------------------------
+
+    # Left leg
+    pygame.draw.polygon(
+        screen,
+        ORANGE,
+        [
+            (x - 45*scale, y + 130*scale),
+            (x - 5*scale, y + 130*scale),
+            (x - 25*scale, y + 250*scale),
+            (x - 70*scale, y + 250*scale)
+        ]
+    )
+
+    # Right leg
+    pygame.draw.polygon(
+        screen,
+        ORANGE,
+        [
+            (x + 5*scale, y + 130*scale),
+            (x + 50*scale, y + 130*scale),
+            (x + 75*scale, y + 250*scale),
+            (x + 30*scale, y + 250*scale)
+        ]
+    )
+
+    # Boots
+    pygame.draw.rect(
+        screen,
+        DARK_BLUE,
+        (
+            x - 72*scale,
+            y + 235*scale,
+            45*scale,
+            55*scale
+        )
+    )
+
+    pygame.draw.rect(
+        screen,
+        DARK_BLUE,
+        (
+            x + 30*scale,
+            y + 235*scale,
+            45*scale,
+            55*scale
+        )
+    )
+
+    # Boot red/orange stripes
+    pygame.draw.line(
+        screen,
+        ORANGE,
+        (x - 70*scale, y + 250*scale),
+        (x - 30*scale, y + 250*scale),
+        max(2, int(5*scale))
+    )
+
+    pygame.draw.line(
+        screen,
+        ORANGE,
+        (x + 32*scale, y + 250*scale),
+        (x + 72*scale, y + 250*scale),
+        max(2, int(5*scale))
+    )
+
+    # -----------------------------
+    # BODY
+    # -----------------------------
+
+    # Blue undershirt
+    pygame.draw.ellipse(
+        screen,
+        BLUE,
+        (
+            x - 55*scale,
+            y + 10*scale,
+            110*scale,
+            145*scale
+        )
+    )
+
+    # Orange gi
+    pygame.draw.polygon(
+        screen,
+        ORANGE,
+        [
+            (x - 55*scale, y + 20*scale),
+            (x - 105*scale, y + 75*scale),
+            (x - 60*scale, y + 145*scale),
+            (x - 20*scale, y + 105*scale),
+            (x, y + 155*scale),
+            (x + 20*scale, y + 105*scale),
+            (x + 60*scale, y + 145*scale),
+            (x + 105*scale, y + 75*scale),
+            (x + 55*scale, y + 20*scale)
+        ]
+    )
+
+    # Gi belt
+    pygame.draw.rect(
+        screen,
+        BLUE,
+        (
+            x - 65*scale,
+            y + 110*scale,
+            130*scale,
+            20*scale
+        )
+    )
+
+    # Belt knot
+    pygame.draw.polygon(
+        screen,
+        BLUE,
+        [
+            (x, y + 125*scale),
+            (x + 45*scale, y + 150*scale),
+            (x + 10*scale, y + 165*scale),
+            (x - 10*scale, y + 145*scale)
+        ]
+    )
+
+    # -----------------------------
+    # ARMS
+    # -----------------------------
+
+    # Left arm
+    pygame.draw.line(
+        screen,
+        ORANGE,
+        (x - 65*scale, y + 45*scale),
+        (x - 125*scale, y + 100*scale),
+        max(5, int(28*scale))
+    )
+
+    # Right arm
+    pygame.draw.line(
+        screen,
+        ORANGE,
+        (x + 65*scale, y + 45*scale),
+        (x + 125*scale, y + 100*scale),
+        max(5, int(28*scale))
+    )
+
+    # Hands
+    pygame.draw.circle(
+        screen,
+        SKIN,
+        (int(x - 125*scale), int(y + 100*scale)),
+        int(18*scale)
+    )
+
+    pygame.draw.circle(
+        screen,
+        SKIN,
+        (int(x + 125*scale), int(y + 100*scale)),
+        int(18*scale)
+    )
+
+    # -----------------------------
+    # NECK
+    # -----------------------------
+
+    pygame.draw.rect(
+        screen,
+        SKIN,
+        (
+            x - 22*scale,
+            y - 25*scale,
+            44*scale,
+            45*scale
+        )
+    )
+
+    # -----------------------------
+    # HEAD
+    # -----------------------------
+
+    pygame.draw.ellipse(
+        screen,
+        SKIN,
+        (
+            x - 52*scale,
+            y - 85*scale,
+            104*scale,
+            100*scale
+        )
+    )
+
+    # -----------------------------
+    # HAIR
+    # -----------------------------
+
+    draw_spiky_hair(x, y - 60*scale, scale)
+
+    # -----------------------------
+    # FACE
+    # -----------------------------
+
+    # Eyes
+    pygame.draw.ellipse(
+        screen,
+        BLACK,
+        (
+            x - 32*scale,
+            y - 35*scale,
+            18*scale,
+            25*scale
+        )
+    )
+
+    pygame.draw.ellipse(
+        screen,
+        BLACK,
+        (
+            x + 14*scale,
+            y - 35*scale,
+            18*scale,
+            25*scale
+        )
+    )
+
+    # Nose
+    pygame.draw.line(
+        screen,
+        DARK_ORANGE,
+        (x, y - 15*scale),
+        (x - 5*scale, y - 2*scale),
+        max(1, int(3*scale))
+    )
+
+    # Mouth
+    pygame.draw.line(
+        screen,
+        DARK_ORANGE,
+        (x - 12*scale, y + 5*scale),
+        (x + 12*scale, y + 5*scale),
+        max(1, int(3*scale))
+    )
+
+    # Chest symbol
+    pygame.draw.circle(
+        screen,
+        WHITE,
+        (int(x + 25*scale), int(y + 60*scale)),
+        int(13*scale)
+    )
+
+    font = pygame.font.SysFont("Arial", max(10, int(16*scale)), bold=True)
+    symbol = font.render("悟", True, BLACK)
+    screen.blit(
+        symbol,
+        (
+            x + 17*scale,
+            y + 48*scale
+        )
+    )
+
+
+def draw_kamehameha(power):
+    """
+    Draws a glowing blue Kamehameha beam.
+    """
+
+    start_x = 330
+    start_y = 360
+
+    beam_length = int(300 + power * 400)
+
+    # Glow layers
+    for width, alpha in [
+        (110, 30),
+        (80, 50),
+        (55, 80)
+    ]:
+        glow = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+        pygame.draw.line(
+            glow,
+            (50, 180, 255, alpha),
+            (start_x, start_y),
+            (start_x + beam_length, start_y),
+            width
+        )
+
+        screen.blit(glow, (0, 0))
+
+    # Main beam
+    pygame.draw.line(
+        screen,
+        CYAN,
+        (start_x, start_y),
+        (start_x + beam_length, start_y),
+        45
+    )
+
+    pygame.draw.line(
+        screen,
+        WHITE,
+        (start_x, start_y),
+        (start_x + beam_length, start_y),
+        18
+    )
+
+    # Energy ball
+    radius = int(40 + power * 30)
+
+    pygame.draw.circle(
+        screen,
+        CYAN,
+        (start_x, start_y),
+        radius
+    )
+
+    pygame.draw.circle(
+        screen,
+        LIGHT_BLUE,
+        (start_x, start_y),
+        int(radius * 0.65)
+    )
+
+    pygame.draw.circle(
+        screen,
+        WHITE,
+        (start_x, start_y),
+        int(radius * 0.3)
+    )
+
+
+def draw_energy_particles(power):
+    for p in particles:
+
+        p[0] += random.uniform(2, 5) * power
+        p[1] += p[3]
+
+        if p[0] > WIDTH:
+            p[0] = random.randint(0, 300)
+            p[1] = random.randint(0, HEIGHT)
+
+        pygame.draw.circle(
+            screen,
+            CYAN,
+            (int(p[0]), int(p[1])),
+            random.randint(1, 4)
+        )
+
+
+# -----------------------------
+# MAIN LOOP
+# -----------------------------
+
+running = True
+
+power = 0
+charging = True
+beam = False
+
+while running:
+
+    for event in pygame.event.get():
+
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+
+            if event.key == pygame.K_SPACE:
+                charging = True
+                beam = False
+
+            if event.key == pygame.K_ESCAPE:
+                running = False
+
+        if event.type == pygame.KEYUP:
+
+            if event.key == pygame.K_SPACE:
+                beam = True
+                charging = False
+
+    # -----------------------------
+    # POWER CHARGING
+    # -----------------------------
+
+    if charging:
+
+        power += 0.008
+
+        if power > 1:
+            power = 1
+
+    else:
+
+        power -= 0.003
+
+        if power < 0:
+            power = 0
+
+    # -----------------------------
+    # BACKGROUND
+    # -----------------------------
+
+    screen.fill((8, 12, 30))
+
+    # Ground
+    pygame.draw.rect(
+        screen,
+        (20, 35, 60),
+        (0, 550, WIDTH, 150)
+    )
+
+    # Energy particles
+    draw_energy_particles(power)
+
+    # -----------------------------
+    # GOKU
+    # -----------------------------
+
+    draw_goku(
+        210,
+        300,
+        1.25
+    )
+
+    # -----------------------------
+    # KAMEHAMEHA
+    # -----------------------------
+
+    if charging or beam:
+        draw_kamehameha(power)
+
+    # -----------------------------
+    # TEXT
+    # -----------------------------
+
+    font = pygame.font.SysFont(
+        "Arial",
+        32,
+        bold=True
+    )
+
+    if charging:
+        text = font.render(
+            "HOLD SPACE: CHARGING KAMEHAMEHA!",
+            True,
+            LIGHT_BLUE
+        )
+    else:
+        text = font.render(
+            "KAMEHAMEHAAAAAA!!!",
+            True,
+            WHITE
+        )
+
+    screen.blit(
+        text,
+        (250, 40)
+    )
+
+    # Power meter
+    pygame.draw.rect(
+        screen,
+        BLACK,
+        (30, 620, 300, 25)
+    )
+
+    pygame.draw.rect(
+        screen,
+        CYAN,
+        (30, 620, int(300 * power), 25)
+    )
+
+    pygame.draw.rect(
+        screen,
+        WHITE,
+        (30, 620, 300, 25),
+        3
+    )
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
